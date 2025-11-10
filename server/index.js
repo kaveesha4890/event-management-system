@@ -12,8 +12,8 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
-const port = process.env.port || 3001;
+const PORT = process.env.PORT || 3001;
 
-app.listen(port,()=>{
-    console.log(`server is running on port ${port}`)
+app.listen(PORT, ()=>{
+    console.log(`server is running on port ${PORT}`)
 })
