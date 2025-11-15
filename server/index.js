@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import cors from 'cors';
 import morgan from 'morgan';
-import userRoute from './routes/authRoutes.js';
+import authRoute from './routes/authRoutes.js';
 
 const app = express();
 dotenv.config();
@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
-app.use("/api/auth", userRoute)
+app.use("/api/auth", authRoute)
 
 const PORT = process.env.PORT || 3001;
 
