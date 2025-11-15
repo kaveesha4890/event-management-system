@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
-app.use("/user", userRoute)
+app.use("/api/auth", userRoute)
 
 const PORT = process.env.PORT || 3001;
 
