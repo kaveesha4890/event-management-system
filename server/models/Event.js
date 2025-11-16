@@ -25,17 +25,17 @@ const eventSchema = new mongoose.Schema(
         },
         organizer: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             required: true
         },
         maxParticipants: {
             type: Number,
             default: 100
         },
-        registeredUsers: {
+        registeredUsers: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-        },
+            ref: "user"
+        }],
         thumbnail: {
             type: String,
             default: ""

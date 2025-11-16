@@ -53,7 +53,7 @@ export const getEventById = async(req,res) => {
 
         return res.status(200).json(event);
     } catch (error) {
-        console.error("Get all Event Error: ", error);
+        console.error("Get an Event Error: ", error);
         res.status(500).json({message: "Internal server error"})
     }
 }
@@ -67,7 +67,7 @@ export const UpdateEvent = async(req,res) => {
             return res.status(404).json({message: "Event not found"});
         }
 
-        if(event.organizer.toString() !== user._id.toString()){
+        if(event.organizer.toString() !== req.user._id.toString()){
             return res.status(403).json({message: 'Not allowed'});
         }
 
@@ -82,7 +82,7 @@ export const UpdateEvent = async(req,res) => {
             event: updatedEvent,
         });
     } catch (error) {
-        console.error("Get all Event Error: ", error);
+        console.error("Update Event Error: ", error);
         res.status(500).json({message: "Internal server error"})
     }
 }
@@ -96,14 +96,15 @@ export const deleteEvent = async(req,res) => {
             return res.status(404).json({message: "Event not found"});
         }
 
-         if(event.organizer.toString() !== user._id.toString()){
+         if(event.organizer.toString() !== req.user._id.toString()){
             return res.status(403).json({message: 'Not allowed'});
         }
         await event.deleteOne();
 
         return res.status(200).json({message: "Event deleted successfully"});
     } catch (error) {
-        console.error("Get all Event Error: ", error);
+        console.error("Delete Event Error: ", error);
         res.status(500).json({message: "Internal server error"})
     }
 }
+
