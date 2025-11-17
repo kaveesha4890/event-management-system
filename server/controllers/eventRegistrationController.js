@@ -1,4 +1,5 @@
 import Event from "../models/Event.js";
+import QRCode from "qrcode";
 
 //Register for event
 export const registerForEvent = async(req,res) => {
@@ -16,18 +17,41 @@ export const registerForEvent = async(req,res) => {
             return res.status(400).json({message: "Organizer cannot register for own event"});
         }
 
-        if(event.registeredUsers.includes(userId)){
-            return res.status(400).json({message:"Already registered for this event"});
+        const alreadyRegistered = event.registeredUsers.find((r)=> r.user?.toString() === userId.toString());
+
+        if(alreadyRegistered){
+            return res.status(400).json({message:"Already registered for this event"})
         }
 
         if(event.registeredUsers.length >= event.maxParticipants){
             return res.status(400).json({message:"Event is full"});
         }
 
-        event.registeredUsers.push(userId);
+        //genarate QR payload
+        const qrPayload = {
+            id,
+            userId,
+            timestamp: Date.now()
+        };
+
+        //convert payload into QR base64 image
+        const qrCodeImage = await QRCode.toDataURL(JSON.stringify(qrPayload));
+
+        event.registeredUsers.push({
+            user: userId,
+            qrcode: qrCodeImage,
+            isScanned: false
+        });
         await event.save();
 
-        return res.status(201).json({message:"Registered successfully"});
+        return res.status(201).json({
+            message:"Registered successfully",
+            ticket: {
+                eventId: id,
+                userId: userId,
+                qrCode: qrCodeImage
+            }
+        });
 
     } catch (error) {
         console.error("Register Event Error: ", error);
