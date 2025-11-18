@@ -1,5 +1,6 @@
 import Event from "../models/Event.js";
 import QRCode from "qrcode";
+import User from "../models/User.js";
 
 //Register for event
 export const registerForEvent = async(req,res) => {
@@ -110,5 +111,83 @@ export const getEventAttendees = async(req,res) => {
     } catch (error) {
         console.error("Get Attendees Error: ", error);
         res.status(500).json({message: "Internal server error"})
+    }
+}
+
+//scan QR code
+export const scanQRCode = async (req,res) => {
+    try {
+        const {qrData} = req.body;
+        const organizerId = req.user._id;
+
+        if(!qrData){
+            return res.status(400).json({message:"QR data is required"});
+        }
+
+        let qrPayload;
+        try{
+            qrPayload = JSON.parse(qrData);
+        }catch(error){
+            return res.status(400).json({message: "Invalid QR code format"});
+        }
+
+        const {id: eventId, userId, timestamp} = qrPayload;
+        const event = await Event.findById(eventId);
+        
+        if(!event){
+            return res.status(404).json({message: "Event not found"});
+        }
+
+        if(event.organizer.toString() !== organizerId.toString()){
+            return res.status(403).json({message: "Not allowed"})
+        }
+
+        const registration = event.registeredUsers.find((r) => r.user?.toString() === userId.toString());
+
+        if(!registration){
+            return res.status(404).json({message: "User not registered for this event"});
+        }
+
+        if(registration.isScanned){
+            return res.status(400).json({
+                message: "Ticket already scanded",
+                user: await User.findById(userId).select("name email"),
+                scannedAt: registration.scannedAt
+            })
+        }
+
+        registration.isScanned = true;
+        registration.scannedAt = new Date();
+
+        if(!event.attendedUsers.includes(userId)){
+            event.attendedUsers.push(userId);
+        }
+
+        await event.save();
+
+        const user = await User.findById(userId).select("name email");
+
+        return res.status(200).json({
+            message: "Attendance marked successfully",
+            attendace: {
+                user:{
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                },
+                event:{
+                    id: event._id,
+                    title: event.title,
+                    date: event.date,
+                    time: event.time
+                },
+                scannedAt: registration.scannedAt,
+                isScanned: registration.isScanned
+            }
+        });
+
+    } catch (error) {
+        console.error("Scan QRCode Error: ", error);
+        return res.status(500).json({message: "Internal server error"});
     }
 }

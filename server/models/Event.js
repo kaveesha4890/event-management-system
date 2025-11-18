@@ -36,7 +36,8 @@ const eventSchema = new mongoose.Schema(
             user: {type: mongoose.Schema.Types.ObjectId, ref: "user"},
             qrcode: {type: String},
             registrationTime: {type: Date, default:Date.now},
-            isScanned: {type: Boolean, default: false}
+            isScanned: {type: Boolean, default: false},
+            scannedAt: {type: Date}
         }],
         attendedUsers: [
             {type: mongoose.Schema.Types.ObjectId, ref: "user"}
