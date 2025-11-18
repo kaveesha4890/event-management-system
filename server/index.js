@@ -4,7 +4,8 @@ import connectDB from './config/db.js';
 import cors from 'cors';
 import morgan from 'morgan';
 import authRoute from './routes/authRoutes.js';
-import eventRoute from './routes/eventRoute.js'
+import eventRoute from './routes/eventRoute.js';
+import uploadRoute from './routes/imageUploadRoutes.js';
 
 const app = express();
 dotenv.config();
@@ -16,6 +17,7 @@ app.use(morgan("dev"));
 
 app.use("/api/auth", authRoute)
 app.use("/api/event", eventRoute)
+app.use("/api/upload", uploadRoute)
 
 const PORT = process.env.PORT || 3001;
 

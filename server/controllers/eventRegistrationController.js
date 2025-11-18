@@ -157,7 +157,7 @@ export const scanQRCode = async (req,res) => {
             return res.status(400).json({message: "Invalid QR code format"});
         }
 
-        const {id: eventId, userId, timestamp} = qrPayload;
+        const {id: eventId, userId} = qrPayload;
         const event = await Event.findById(eventId);
         
         if(!event){
