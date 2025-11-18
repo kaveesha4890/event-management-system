@@ -94,10 +94,9 @@ export const getEventAttendees = async(req,res) => {
     try {
         const {id} = req.params;
 
-        const event = await Event.findById(id).populate(
-            "registeredUsers",
-            "name email role"
-        );
+        const event = await Event.findById(id)
+            .populate("registeredUsers", "name email role")
+            .populate("attendedUsers", "name email");
 
         if(!event){
             return res.status(404).json({message:"Event not found"});
@@ -107,9 +106,36 @@ export const getEventAttendees = async(req,res) => {
             return res.status(403).json({message: "Not allowed"});
         }
 
-        return res.status(200).json(event.registeredUsers);
+        const totalRegistered = event.registeredUsers.length;
+        const totalAttended = event.attendedUsers.length;
+        const scannedTickets = event.registeredUsers.filter(r=>r.isScanned).length;
+
+        const attendanceRate = totalRegistered > 0 ? (totalAttended/totalRegistered) * 100 : 0;
+
+        return res.status(200).json({
+            event: {
+                id: event._id,
+                title: event.title,
+                date: event.date,
+                location: event.location
+            },
+            statistics: {
+                totalRegistered: totalRegistered,
+                totalAttended: totalAttended,
+                scannedTickets: scannedTickets,
+                attendanceRate: Math.round(attendanceRate * 100) / 100,
+                remainingCapacity: event.maxParticipants - totalRegistered
+            },
+            registeredUsers: event.registeredUsers.map(reg => ({
+                user: reg.user,
+                registrationTime: reg.registrationTime,
+                isScanned: reg.isScanned,
+                scannedAt: reg.scannedAt
+            })),
+            attendedUsers: event.attendedUsers
+        })
     } catch (error) {
-        console.error("Get Attendees Error: ", error);
+        console.error("Get Event stats Error: ", error);
         res.status(500).json({message: "Internal server error"})
     }
 }

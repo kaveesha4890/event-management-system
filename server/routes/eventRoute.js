@@ -13,7 +13,7 @@ router.delete("/:id", authMiddleware, roleMiddleware("organizer"), deleteEvent)
 
 router.post("/:id/register", authMiddleware, registerForEvent)
 router.post("/:id/cancel", authMiddleware, cancelRegistration)
-router.get("/:id/attendees", authMiddleware, roleMiddleware("organizer"), getEventAttendees)
+router.get("/:id/stats", authMiddleware, roleMiddleware("organizer"), getEventAttendees)
 router.post("/scan", authMiddleware, roleMiddleware("organizer"), scanQRCode);
 
 export default router;
