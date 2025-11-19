@@ -1,6 +1,7 @@
 import Event from "../models/Event.js";
 import QRCode from "qrcode";
 import User from "../models/User.js";
+import { sendMail } from "../utils/mailer.js";
 
 //Register for event
 export const registerForEvent = async(req,res) => {
@@ -43,6 +44,35 @@ export const registerForEvent = async(req,res) => {
             qrcode: qrCodeImage,
             isScanned: false
         });
+
+        const user = await User.findById(userId);
+
+        const emailHtml = `
+            <p>Hello ${user.name},</p>
+            <p>Thanks for registering for <strong>${event.title}</strong> on ${event.date} at ${event.time || ""}.</p>
+            <p>Location: ${event.location}</p>
+            <p>Please present this QR code at the entrance:</p>
+            <img src="${qrCodeImage}" alt="Ticket QR" style="max-width:300px"/>
+            <p>Registration ID: <code>${userId}-${id}</code></p>
+            <p>See you there!</p>
+        `;
+        const base64Data = qrCodeImage.split(",")[1];
+        const qrBuffer = Buffer.from(base64Data, "base64");
+
+        const mailOptions = {
+            to: user.email,
+            subject: `Your ticket for ${event.title}`,
+            html: emailHtml,
+            attachments: [
+                {
+                    filename: `ticket=${id}.png`,
+                    content: qrBuffer,
+                    contentType: "image/png"
+                }
+            ]
+        }
+
+        await sendMail(mailOptions);
         await event.save();
 
         return res.status(201).json({
